@@ -1888,7 +1888,7 @@ body {
       <canvas class="confetti-canvas" id="confetti-canvas"></canvas>
       <img class="money-air" src="assets/money-air.png" alt="">
       <div class="slide-layout">
-        <div class="slide-title">Impact so far:<br><span class="green">8 initiatives shipped<br>and more lined up</span></div>
+        <div class="slide-title">Impact so far:<br><span class="green">8 initiatives shipped</span></div>
         <div class="slide-right">
           <div class="initiative-list">
             <div class="initiative-heading">Initiative</div>
@@ -1900,6 +1900,7 @@ body {
             <div class="initiative-item">Expanding scam suspensions to sponsored accounts</div>
             <div class="initiative-item">Sanctions warnings</div>
             <div class="initiative-item">Expanding denylist reasons</div>
+            <div class="initiative-item initiative-more" id="more-lined-up" style="color: var(--green); border-bottom: none; font-size: clamp(1rem, 1.4vw, 1.2rem); font-weight: 600;"></div>
           </div>
         </div>
       </div>
@@ -2121,7 +2122,7 @@ body {
     // New workflow for slide 8
     if (index === 7) runSlide8(); else resetSlide8();
     // Confetti for slide 10
-    if (index === 9) startConfetti(); else stopConfetti();
+    if (index === 9) { startConfetti(); typeMoreLinedUp(); } else { stopConfetti(); resetMoreLinedUp(); }
     // Typewriter for slide 12
     if (index === 11) runTypewriters();
   }
@@ -2418,6 +2419,28 @@ body {
     'rgba(255, 255, 200, 0.5)',  // pastel yellow
     'rgba(200, 255, 200, 0.5)',  // pastel mint
   ];
+
+  let moreLinedUpTimer = null;
+  function typeMoreLinedUp() {
+    const el = document.getElementById('more-lined-up');
+    if (!el || el.dataset.typed) return;
+    el.dataset.typed = '1';
+    const text = 'and more lined up';
+    let i = 0;
+    el.textContent = '';
+    moreLinedUpTimer = setTimeout(function tick() {
+      if (i < text.length) {
+        el.textContent += text[i];
+        i++;
+        moreLinedUpTimer = setTimeout(tick, 50);
+      }
+    }, 1000);
+  }
+  function resetMoreLinedUp() {
+    if (moreLinedUpTimer) { clearTimeout(moreLinedUpTimer); moreLinedUpTimer = null; }
+    const el = document.getElementById('more-lined-up');
+    if (el) { el.textContent = ''; delete el.dataset.typed; }
+  }
 
   function startConfetti() {
     const canvas = document.getElementById('confetti-canvas');
