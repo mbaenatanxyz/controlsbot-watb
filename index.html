@@ -115,20 +115,57 @@ body {
 #hud.light { color: var(--black); }
 #hud.dark { color: var(--white); }
 
-#vibes-btn {
+.vibes-wrap {
   pointer-events: auto;
-  background: none;
-  border: 1px solid currentColor;
-  color: inherit;
-  font-family: var(--font);
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  padding: 0.4rem 0.8rem;
-  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   cursor: pointer;
-  transition: opacity 0.3s;
 }
-#vibes-btn:hover { opacity: 0.7; }
+
+.vibes-label {
+  font-family: var(--font);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: inherit;
+  opacity: 0.6;
+}
+
+.vibes-toggle {
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  background: transparent;
+  position: relative;
+  transition: background 0.3s, border-color 0.3s;
+  opacity: 0.5;
+}
+
+.vibes-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform 0.3s;
+}
+
+.vibes-wrap.active .vibes-toggle {
+  background: var(--green);
+  border-color: currentColor;
+  opacity: 1;
+}
+
+.vibes-wrap.active .vibes-toggle::after {
+  transform: translateX(12px);
+  background: var(--black);
+}
+
+.vibes-wrap:hover { opacity: 0.8; }
 
 #slide-counter {
   font-size: 0.75rem;
@@ -287,8 +324,190 @@ body {
   transform: translateY(0);
 }
 
-/* ── SLIDE 3: Phone mockups ── */
-#s3 .phones {
+/* Slide 3 accent image */
+#s3 .accent-img {
+  position: absolute;
+  bottom: clamp(2rem, 4vw, 4rem);
+  right: clamp(2rem, 4vw, 4rem);
+  width: clamp(80px, 10vw, 140px);
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.3s;
+}
+
+#s3.active .accent-img {
+  opacity: 1;
+  animation: accentTwitch5 2.3s ease-in-out infinite;
+}
+
+@keyframes accentTwitch5 {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-4deg); }
+}
+
+/* ── SLIDE 3: Platform (horizontal team) ── */
+#s3::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#s3 .slide-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  gap: clamp(3rem, 6vw, 8rem);
+}
+
+#s3 .slide-title {
+  flex: 0 0 auto;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--white);
+  max-width: 340px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s3.active .slide-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s3 .slide-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.platform-viz {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+
+#s3.active .platform-viz {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.platform-verticals {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  margin-bottom: 3px;
+}
+
+.platform-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.platform-col-bar {
+  width: 100%;
+  height: clamp(140px, 20vh, 240px);
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  opacity: 0;
+  transform: translateY(-40px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#s3.active .platform-col-bar {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.platform-col:nth-child(1) .platform-col-bar { transition-delay: 0.4s; }
+.platform-col:nth-child(2) .platform-col-bar { transition-delay: 0.5s; }
+.platform-col:nth-child(3) .platform-col-bar { transition-delay: 0.6s; }
+.platform-col:nth-child(4) .platform-col-bar { transition-delay: 0.7s; }
+.platform-col:nth-child(5) .platform-col-bar { transition-delay: 0.8s; }
+.platform-col:nth-child(6) .platform-col-bar { transition-delay: 0.9s; }
+.platform-col:nth-child(7) .platform-col-bar { transition-delay: 1.0s; }
+.platform-col:nth-child(8) .platform-col-bar { transition-delay: 1.1s; }
+
+.platform-col-other .platform-col-bar {
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: transparent;
+}
+
+.platform-col-other .platform-col-label {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.platform-col-label {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: #fff;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.platform-col-fade .platform-col-bar {
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+}
+
+.platform-trust {
+  width: 100%;
+  background: var(--green);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: opacity 0.6s ease 0.3s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
+}
+
+#s3.active .platform-trust {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.platform-trust-label {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  font-weight: 600;
+  color: var(--black);
+  letter-spacing: -0.005em;
+}
+
+/* ── SLIDE 4: Phone mockups ── */
+#s4 .phones {
   display: flex;
   gap: clamp(1.5rem, 3vw, 3rem);
   align-items: center;
@@ -328,7 +547,7 @@ body {
 
 
 /* ── SLIDE 4: Scale stats ── */
-#s4 .stats {
+#s5 .stats {
   display: flex;
   gap: clamp(3rem, 8vw, 8rem);
   align-items: flex-start;
@@ -393,7 +612,7 @@ body {
 }
 
 /* ── SLIDE 5 & 13: Workflow ── */
-#s5::before {
+#s6::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -403,7 +622,7 @@ body {
   pointer-events: none;
 }
 
-#s5 .slide-layout {
+#s6 .slide-layout {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -413,25 +632,24 @@ body {
   gap: clamp(3rem, 6vw, 8rem);
 }
 
-#s5 .old-computer {
+#s6 .old-computer {
   position: absolute;
   bottom: clamp(2rem, 4vw, 4rem);
-  right: clamp(10rem, 20vw, 24rem);
-  width: clamp(100px, 12vw, 180px);
+  right: clamp(2rem, 4vw, 4rem);
+  width: clamp(80px, 10vw, 140px);
   height: auto;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
   z-index: 1;
   pointer-events: none;
+  transition: opacity 0.8s ease 0.3s;
 }
 
-#s5.active .old-computer {
+#s6.active .old-computer {
   opacity: 1;
-  transform: translateY(0);
+  animation: accentTwitch1 2.5s ease-in-out infinite;
 }
 
-#s5 .slide-title {
+#s6 .slide-title {
   flex: 0 0 auto;
   font-size: clamp(2.5rem, 5.5vw, 5rem);
   font-weight: 400;
@@ -443,12 +661,12 @@ body {
   transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-#s5.active .slide-title {
+#s6.active .slide-title {
   opacity: 1;
   transform: translateY(0);
 }
 
-#s5 .slide-right {
+#s6 .slide-right {
   flex: 1;
 }
 
@@ -477,19 +695,19 @@ body {
   height: 28px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.7rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.7);
   font-variant-numeric: tabular-nums;
 }
 
 .wf-connector {
   width: 1px;
   height: 20px;
-  background: #333;
+  background: rgba(255, 255, 255, 0.3);
   margin-left: 13px;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -500,12 +718,12 @@ body {
 }
 
 .wf-step {
-  background: #111;
-  border: 1px solid #333;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 12px;
   padding: 0.65rem 1rem;
   font-size: clamp(0.75rem, 1vw, 0.9rem);
-  color: #ccc;
+  color: var(--white);
   text-align: left;
   font-family: system-ui, -apple-system, sans-serif;
   letter-spacing: -0.005em;
@@ -529,7 +747,7 @@ body {
 }
 
 /* ── SLIDE 6: Punchline ── */
-#s6 .slide6-bg {
+#s7 .slide6-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -539,18 +757,18 @@ body {
   transition: opacity 3s ease;
 }
 
-#s6.active .slide6-bg {
+#s7.active .slide6-bg {
   opacity: 1;
 }
 
-#s6 .slide6-overlay {
+#s7 .slide6-overlay {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.8);
   z-index: 1;
 }
 
-#s6 .punchline-wrap {
+#s7 .punchline-wrap {
   position: relative;
   z-index: 2;
   display: flex;
@@ -562,11 +780,11 @@ body {
   gap: clamp(3rem, 6vw, 8rem);
 }
 
-#s6 .punchline-text {
+#s7 .punchline-text {
   flex: 0 0 auto;
 }
 
-#s6 .punchline-text .line1 {
+#s7 .punchline-text .line1 {
   font-size: clamp(2.5rem, 5.5vw, 5rem);
   font-weight: 400;
   letter-spacing: -0.03em;
@@ -577,7 +795,7 @@ body {
   transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-#s6 .punchline-text .line2 {
+#s7 .punchline-text .line2 {
   font-size: clamp(2.5rem, 5.5vw, 5rem);
   font-weight: 400;
   letter-spacing: -0.03em;
@@ -588,8 +806,8 @@ body {
   transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
 }
 
-#s6.active .punchline-text .line1,
-#s6.active .punchline-text .line2 {
+#s7.active .punchline-text .line1,
+#s7.active .punchline-text .line2 {
   opacity: 1;
   transform: translateY(0);
 }
@@ -613,7 +831,7 @@ body {
   transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-#s6.active .pattern-cell {
+#s7.active .pattern-cell {
   opacity: 1;
   transform: scale(1);
 }
@@ -630,7 +848,7 @@ body {
 }
 
 /* Pulse animation on bright cells once revealed */
-#s6.active .pattern-cell.bright {
+#s7.active .pattern-cell.bright {
   animation: cellPulse 2.4s ease-in-out infinite;
 }
 
@@ -640,7 +858,7 @@ body {
 }
 
 /* Shimmer sweep across filled cells */
-#s6.active .pattern-cell.filled {
+#s7.active .pattern-cell.filled {
   animation: cellShimmer 3s ease-in-out infinite;
 }
 
@@ -688,7 +906,7 @@ body {
 }
 
 /* ── SLIDE 7: Capabilities (circle fan) ── */
-#s7 .card-stack-wrap {
+#s8 .card-stack-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -743,6 +961,31 @@ body {
   font-size: clamp(1.2rem, 1.8vw, 1.6rem);
   opacity: 0;
   transform: scale(0.5);
+}
+
+/* Slide 8 accent image */
+#s8 .accent-img {
+  position: absolute;
+  bottom: clamp(2rem, 4vw, 4rem);
+  right: clamp(2rem, 4vw, 4rem);
+  width: clamp(80px, 10vw, 140px);
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.3s;
+}
+
+#s8.active .accent-img {
+  opacity: 1;
+  animation: accentTwitch4 2.4s ease-in-out infinite;
+}
+
+@keyframes accentTwitch4 {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(4deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-3deg); }
 }
 
 /* ── SLIDE 8: New workflow ── */
@@ -853,53 +1096,18 @@ body {
   background: var(--black);
 }
 
-#s9 .slide-layout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 0 clamp(2rem, 5vw, 6rem);
-  gap: clamp(3rem, 6vw, 8rem);
-}
-
-#s9 .slide-title {
-  flex: 0 0 auto;
-  font-size: clamp(2.5rem, 5.5vw, 5rem);
-  font-weight: 400;
-  letter-spacing: -0.03em;
-  line-height: 1.14;
-  color: var(--white);
-  max-width: 340px;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-#s9.active .slide-title {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-#s9 .slide-right {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 #s9 .demo-gif {
-  max-width: 100%;
-  max-height: 75vh;
+  max-width: 90%;
+  max-height: 85vh;
   border-radius: 12px;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+  transform: scale(0.95);
+  transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
 #s9.active .demo-gif {
   opacity: 1;
-  transform: translateY(0);
+  transform: scale(1);
 }
 
 /* ── SLIDE 10: Impact ── */
@@ -994,6 +1202,58 @@ body {
 
 .tracker-dash {
   color: #444;
+}
+
+/* Confetti sparkle */
+#s10 .confetti-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.5s ease 0.5s;
+}
+
+#s10.active .confetti-canvas {
+  opacity: 1;
+}
+
+/* Initiative list */
+.initiative-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+
+#s10.active .initiative-list {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.initiative-heading {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.005em;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.2rem;
+  border-bottom: 1px solid #333;
+}
+
+.initiative-item {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: #fff;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* Money air - bottom right with twitch */
@@ -1382,13 +1642,13 @@ body {
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  #s3 .phones { gap: 0.8rem; }
-  #s4 .stats { flex-direction: column; align-items: center; gap: 2rem; }
+  #s4 .phones { gap: 0.8rem; }
+  #s5 .stats { flex-direction: column; align-items: center; gap: 2rem; }
   .metric-compare { flex-direction: column; align-items: flex-start; }
 }
 
 @media (max-width: 480px) {
-  #s3 .phones { flex-direction: column; align-items: center; }
+  #s4 .phones { flex-direction: column; align-items: center; }
 }
 </style>
 </head>
@@ -1400,7 +1660,7 @@ body {
 </audio>
 
 <div id="hud" class="light">
-  <button id="vibes-btn">vibes on</button>
+  <div class="vibes-wrap" id="vibes-wrap"><span class="vibes-label">vibes</span><div class="vibes-toggle"></div></div>
   <span id="slide-counter">1 / 15</span>
 </div>
 
@@ -1437,8 +1697,46 @@ body {
       <div class="mission-text">Our team helps protect every customer</div>
     </div>
 
-    <!-- SLIDE 3: Phone mockups -->
+    <!-- SLIDE 3: Platform -->
     <div class="slide dark" id="s3" data-theme="dark">
+      <img class="accent-img" src="assets/dice.png" alt="">
+      <div class="slide-layout">
+        <div class="slide-title">We are a central platform product</div>
+        <div class="slide-right">
+          <div class="platform-viz">
+            <div class="platform-verticals">
+              <div class="platform-col platform-col-other">
+                <div class="platform-col-bar"><span class="platform-col-label">Cash App products</span></div>
+              </div>
+              <div class="platform-col">
+                <div class="platform-col-bar"><span class="platform-col-label">Banking</span></div>
+              </div>
+              <div class="platform-col">
+                <div class="platform-col-bar"><span class="platform-col-label">Families</span></div>
+              </div>
+              <div class="platform-col">
+                <div class="platform-col-bar"><span class="platform-col-label">Legal</span></div>
+              </div>
+              <div class="platform-col">
+                <div class="platform-col-bar"><span class="platform-col-label">Compliance</span></div>
+              </div>
+              <div class="platform-col">
+                <div class="platform-col-bar"><span class="platform-col-label">ML</span></div>
+              </div>
+              <div class="platform-col platform-col-fade">
+                <div class="platform-col-bar"></div>
+              </div>
+            </div>
+            <div class="platform-trust">
+              <span class="platform-trust-label">Trust</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Phone mockups -->
+    <div class="slide dark" id="s4" data-theme="dark">
       <div class="phones">
         <div class="phone-frame" style="transition-delay: 0.1s">
           <img src="assets/phone-limit.png" alt="$500 remaining of your limit">
@@ -1453,7 +1751,7 @@ body {
     </div>
 
     <!-- SLIDE 4: Scale stats -->
-    <div class="slide dark" id="s4" data-theme="dark">
+    <div class="slide dark" id="s5" data-theme="dark">
       <div class="stats">
         <div class="stat" style="transition-delay: 0.1s">
           <div class="stat-icon"><img src="assets/icon-lock.png" alt=""></div>
@@ -1474,7 +1772,7 @@ body {
     </div>
 
     <!-- SLIDE 5: Old workflow -->
-    <div class="slide dark" id="s5" data-theme="dark">
+    <div class="slide dark" id="s6" data-theme="dark">
       <div class="slide-layout">
         <div class="slide-title">Previous process</div>
         <div class="slide-right">
@@ -1520,7 +1818,7 @@ body {
     </div>
 
     <!-- SLIDE 6: Punchline -->
-    <div class="slide dark" id="s6" data-theme="dark">
+    <div class="slide dark" id="s7" data-theme="dark">
       <div class="slide6-bg"></div>
       <div class="slide6-overlay"></div>
       <div class="punchline-wrap">
@@ -1532,26 +1830,9 @@ body {
       </div>
     </div>
 
-    <!-- SLIDE 7: Capabilities (card stack) -->
-    <div class="slide dark" id="s7" data-theme="dark">
-      <div class="s7-gif-phase" id="s7-gif">
-        <img src="assets/controlsbot.gif" alt="Controls Bot">
-      </div>
-      <div class="card-stack-wrap">
-        <div class="card-stack">
-          <div class="stack-card back" style="transition-delay: 0.15s">Data</div>
-          <div class="stack-card back" style="transition-delay: 0.25s">Product</div>
-          <div class="stack-card back" style="transition-delay: 0.35s">Design</div>
-          <div class="stack-card back" style="transition-delay: 0.45s">Content</div>
-          <div class="stack-card back" style="transition-delay: 0.55s">Compliance</div>
-          <div class="stack-card back" style="transition-delay: 0.65s">Engineering</div>
-          <div class="stack-card front" style="transition-delay: 0.05s">Controls Bot</div>
-        </div>
-      </div>
-    </div>
-
     <!-- SLIDE 8: New workflow -->
     <div class="slide dark" id="s8" data-theme="dark">
+      <img class="accent-img" src="assets/mushroom.png" alt="">
       <div class="slide-layout">
         <div class="slide-title">Anyone can contribute to the trust space</div>
         <div class="slide-right">
@@ -1597,74 +1878,29 @@ body {
 
     <!-- SLIDE 9: Demo -->
     <div class="slide dark" id="s9" data-theme="dark">
-      <div class="slide-layout">
-        <div class="slide-title">What this looks like end to end</div>
-        <div class="slide-right">
-          <img class="demo-gif" src="assets/controlsdemo.gif" alt="Controls Bot demo">
-        </div>
+      <div class="slide-center">
+        <img class="demo-gif" src="assets/controlsdemo.gif" alt="Controls Bot demo">
       </div>
     </div>
 
     <!-- SLIDE 10: Impact -->
     <div class="slide dark" id="s10" data-theme="dark">
+      <canvas class="confetti-canvas" id="confetti-canvas"></canvas>
       <img class="money-air" src="assets/money-air.png" alt="">
       <div class="slide-layout">
-        <div class="slide-title">Impact so far:<br><span class="green">7 initiatives</span></div>
+        <div class="slide-title">Impact so far:<br><span class="green">8 initiatives shipped<br>and more lined up</span></div>
         <div class="slide-right">
-          <table class="tracker-table">
-            <thead>
-              <tr>
-                <th>Initiative</th>
-                <th>PRD</th>
-                <th>Design</th>
-                <th>Eng</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Scam suspension notifications</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-check">&#10003;</td>
-              </tr>
-              <tr>
-                <td>Elder abuse suspensions</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-check">&#10003;</td>
-              </tr>
-              <tr>
-                <td>ATM withdrawal limits</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-dash">&mdash;</td>
-                <td class="tracker-dash">&mdash;</td>
-              </tr>
-              <tr>
-                <td>Cards aggregated by SSN</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-dash">&mdash;</td>
-                <td class="tracker-dash">&mdash;</td>
-              </tr>
-              <tr>
-                <td>Automating asset denylisting</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-dash">&mdash;</td>
-                <td class="tracker-dash">&mdash;</td>
-              </tr>
-              <tr>
-                <td>Expanding scam suspensions to sponsored accounts</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-dash">&mdash;</td>
-                <td class="tracker-dash">&mdash;</td>
-              </tr>
-              <tr>
-                <td>Sanctions warnings</td>
-                <td class="tracker-dash">&mdash;</td>
-                <td class="tracker-check">&#10003;</td>
-                <td class="tracker-dash">&mdash;</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="initiative-list">
+            <div class="initiative-heading">Initiative</div>
+            <div class="initiative-item">Scam suspension notifications</div>
+            <div class="initiative-item">Elder abuse suspensions</div>
+            <div class="initiative-item">ATM withdrawal limits</div>
+            <div class="initiative-item">Cards aggregated by SSN</div>
+            <div class="initiative-item">Automating asset denylisting</div>
+            <div class="initiative-item">Expanding scam suspensions to sponsored accounts</div>
+            <div class="initiative-item">Sanctions warnings</div>
+            <div class="initiative-item">Expanding denylist reasons</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1715,7 +1951,7 @@ body {
 
     <!-- SLIDE 13: Team -->
     <div class="slide dark" id="s13" data-theme="dark">
-      <img class="accent-img" src="assets/peace.png" alt="">
+      <img class="accent-img" src="assets/glasses.png" alt="">
       <div class="slide-center">
         <div class="team-list">
           <div class="team-line">Nisha Khalsa <span class="team-discipline">Product</span></div>
@@ -1727,6 +1963,8 @@ body {
           <div class="team-line">Conor Duffy <span class="team-discipline">Legal</span></div>
           <div class="team-line">Michael Carrah <span class="team-discipline">Legal</span></div>
           <div class="team-line">Nick Burgess <span class="team-discipline">Compliance</span></div>
+          <div class="team-line">Prateek Janardhan <span class="team-discipline">Product</span></div>
+          <div class="team-line">Wesley Chow <span class="team-discipline">Engineering</span></div>
         </div>
       </div>
     </div>
@@ -1874,18 +2112,17 @@ body {
   function onSlideEnter(index) {
     // Flash images for slide 2
     if (index === 1) startFlash(); else stopFlash();
-    // Count-up for slide 4
-    if (index === 3) runCountUps();
-    // Build workflow for slide 5
-    if (index === 4) buildWorkflow('#old-workflow');
-    // Pattern grid for slide 6
-    if (index === 5) buildPatternGrid();
-    // GIF then circle fan for slide 7
-    if (index === 6) runSlide7();
-    if (index !== 6) resetSlide7();
+    // Count-up for slide 5
+    if (index === 4) runCountUps();
+    // Build workflow for slide 6
+    if (index === 5) buildWorkflow('#old-workflow'); else resetWorkflow('#old-workflow');
+    // Pattern grid for slide 7
+    if (index === 6) buildPatternGrid();
     // New workflow for slide 8
     if (index === 7) runSlide8(); else resetSlide8();
-    // Typewriter for slide 14
+    // Confetti for slide 10
+    if (index === 9) startConfetti(); else stopConfetti();
+    // Typewriter for slide 12
     if (index === 11) runTypewriters();
   }
 
@@ -1919,8 +2156,8 @@ body {
     if (s7Timer) { clearTimeout(s7Timer); s7Timer = null; }
     // Reset circle fan state
     fanRunning = false;
-    const front = document.querySelector('#s7 .stack-card.front');
-    const backs = Array.from(document.querySelectorAll('#s7 .stack-card.back'));
+    const front = document.querySelector('#s13 .stack-card.front');
+    const backs = Array.from(document.querySelectorAll('#s13 .stack-card.back'));
     if (front) { front.style.opacity = '0'; front.style.transform = 'scale(0.5)'; }
     backs.forEach(c => { c.style.opacity = '0'; c.style.transform = 'translateX(0) scale(0.3)'; });
   }
@@ -1929,6 +2166,7 @@ body {
   const s8OriginalSteps = ['Incoming request', 'Define product requirements', 'Generate PRD', 'Run Snowflake queries', 'Create Figma mocks', 'Get feedback, iterate', 'Build & Ship'];
 
   function resetSlide8() {
+    if (s8LoopTimer) { clearTimeout(s8LoopTimer); s8LoopTimer = null; }
     const wf = document.querySelector('#new-workflow');
     if (!wf) return;
     delete wf.dataset.built;
@@ -1960,20 +2198,36 @@ body {
     });
   }
 
-  // Slide 8: show all steps, then consolidate 1-5 into Controls Bot
+  // Slide 8: show all steps, consolidate, hold, then loop
+  let s8LoopTimer = null;
   function runSlide8() {
     const wf = document.querySelector('#new-workflow');
     if (!wf || wf.dataset.built) return;
     wf.dataset.built = '1';
+    runSlide8Cycle();
+  }
+
+  function runSlide8Cycle() {
+    const wf = document.querySelector('#new-workflow');
+    if (!wf) return;
     const allItems = wf.querySelectorAll('.wf-row, .wf-connector');
     const rows = wf.querySelectorAll('.wf-row');
     const connectors = wf.querySelectorAll('.wf-connector');
+
+    // Reset to original state
+    allItems.forEach(item => item.classList.remove('collapsing'));
+    rows.forEach((row, i) => {
+      const step = row.querySelector('.wf-step');
+      const num = row.querySelector('.wf-number');
+      if (step) { step.textContent = s8OriginalSteps[i]; step.classList.remove('bot-covered'); }
+      if (num) { num.textContent = i + 1; num.classList.remove('bot-covered'); num.style.background = ''; num.style.borderColor = ''; num.style.color = ''; num.style.fontWeight = ''; }
+    });
 
     // Show all steps immediately
     allItems.forEach(item => item.classList.add('wf-visible'));
 
     // After 2s, highlight steps 1-5 green
-    setTimeout(() => {
+    s8LoopTimer = setTimeout(() => {
       for (let i = 0; i < 5 && i < rows.length; i++) {
         const step = rows[i].querySelector('.wf-step');
         const num = rows[i].querySelector('.wf-number');
@@ -1981,17 +2235,13 @@ body {
         if (num) num.classList.add('bot-covered');
       }
 
-      // After 2s hold, collapse rows 2-5 into one
-      setTimeout(() => {
-        for (let i = 1; i < 5; i++) {
-          rows[i].classList.add('collapsing');
-        }
-        for (let i = 0; i < 4; i++) {
-          connectors[i].classList.add('collapsing');
-        }
+      // After 2s, collapse rows 2-5
+      s8LoopTimer = setTimeout(() => {
+        for (let i = 1; i < 5; i++) rows[i].classList.add('collapsing');
+        for (let i = 0; i < 4; i++) connectors[i].classList.add('collapsing');
 
         // Transform row 1 into "Controls Bot"
-        setTimeout(() => {
+        s8LoopTimer = setTimeout(() => {
           const firstStep = rows[0].querySelector('.wf-step');
           const firstNum = rows[0].querySelector('.wf-number');
           if (firstStep) firstStep.textContent = 'Controls Bot';
@@ -2002,10 +2252,13 @@ body {
             firstNum.style.fontWeight = '700';
             firstNum.textContent = '\u2713';
           }
-
-          // Renumber remaining steps
           if (rows[5]) rows[5].querySelector('.wf-number').textContent = '2';
           if (rows[6]) rows[6].querySelector('.wf-number').textContent = '3';
+
+          // Hold for 2s at consolidated state, then loop
+          s8LoopTimer = setTimeout(() => {
+            runSlide8Cycle();
+          }, 2000);
         }, 500);
       }, 2000);
     }, 2000);
@@ -2016,8 +2269,8 @@ body {
   function runCircleFan() {
     if (fanRunning) return;
     fanRunning = true;
-    const front = document.querySelector('#s7 .stack-card.front');
-    const backs = Array.from(document.querySelectorAll('#s7 .stack-card.back'));
+    const front = document.querySelector('#s13 .stack-card.front');
+    const backs = Array.from(document.querySelectorAll('#s13 .stack-card.back'));
     if (!front) return;
 
     // Use wider gap to prevent overlapping
@@ -2025,7 +2278,7 @@ body {
     const extraPad = gap * 0.5;
 
     function fanOut() {
-      if (!document.querySelector('#s7.active')) { fanRunning = false; return; }
+      if (!document.querySelector('#s13.active')) { fanRunning = false; return; }
 
       // Show Controls Bot centered in the right portion
       front.style.opacity = '1';
@@ -2062,7 +2315,7 @@ body {
               front.style.transform = 'translateX(0) scale(1)';
               // Seamlessly loop -- no opacity reset, just re-trigger fanOut
               setTimeout(() => {
-                if (document.querySelector('#s7.active')) {
+                if (document.querySelector('#s13.active')) {
                   fanOut();
                 } else {
                   fanRunning = false;
@@ -2104,6 +2357,15 @@ body {
   }
 
   // Sequentially reveal workflow rows one at a time
+  function resetWorkflow(selector) {
+    const wf = document.querySelector(selector);
+    if (!wf) return;
+    delete wf.dataset.built;
+    wf.querySelectorAll('.wf-row, .wf-connector').forEach(item => {
+      item.classList.remove('wf-visible');
+    });
+  }
+
   function buildWorkflow(selector) {
     const wf = document.querySelector(selector);
     if (!wf || wf.dataset.built) return;
@@ -2118,7 +2380,7 @@ body {
 
   // Count-up animation
   function runCountUps() {
-    document.querySelectorAll('#s4 .count-up').forEach(el => {
+    document.querySelectorAll('#s5 .count-up').forEach(el => {
       const target = parseInt(el.dataset.target);
       if (el.dataset.done) return;
       el.dataset.done = '1';
@@ -2133,7 +2395,7 @@ body {
   }
 
   function runImpactCount() {
-    const el = document.querySelector('#s10 .count-target');
+    const el = document.querySelector('#s13 .count-target');
     if (!el || el.dataset.done) return;
     el.dataset.done = '1';
     const target = parseInt(el.dataset.target);
@@ -2143,6 +2405,71 @@ body {
       if (val >= target) { val = target; clearInterval(interval); }
       el.textContent = val;
     }, 120);
+  }
+
+  // Confetti sparkle for slide 10
+  let confettiAnim = null;
+  const confettiColors = [
+    'rgba(255, 182, 193, 0.6)',  // pastel pink
+    'rgba(173, 216, 230, 0.6)',  // pastel blue
+    'rgba(255, 218, 185, 0.6)',  // pastel peach
+    'rgba(221, 160, 221, 0.6)',  // pastel plum
+    'rgba(176, 224, 230, 0.5)',  // pastel teal
+    'rgba(255, 255, 200, 0.5)',  // pastel yellow
+    'rgba(200, 255, 200, 0.5)',  // pastel mint
+  ];
+
+  function startConfetti() {
+    const canvas = document.getElementById('confetti-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth * devicePixelRatio;
+    canvas.height = canvas.offsetHeight * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+
+    const particles = [];
+    for (let i = 0; i < 60; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        size: Math.random() * 3 + 1,
+        speedY: Math.random() * 0.3 + 0.1,
+        speedX: (Math.random() - 0.5) * 0.3,
+        opacity: Math.random() * 0.5 + 0.2,
+        fadeDir: Math.random() > 0.5 ? 1 : -1,
+        fadeSpeed: Math.random() * 0.008 + 0.003,
+        color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach(p => {
+        p.y -= p.speedY;
+        p.x += p.speedX;
+        p.opacity += p.fadeDir * p.fadeSpeed;
+        if (p.opacity >= 0.7) p.fadeDir = -1;
+        if (p.opacity <= 0.1) p.fadeDir = 1;
+        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color.replace(/[\d.]+\)$/, p.opacity.toFixed(2) + ')');
+        ctx.fill();
+      });
+      confettiAnim = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function stopConfetti() {
+    if (confettiAnim) { cancelAnimationFrame(confettiAnim); confettiAnim = null; }
+    const canvas = document.getElementById('confetti-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
   }
 
   // Typewriter
@@ -2169,13 +2496,13 @@ body {
 
   // ── Vibes toggle ──
   let vibesOn = false;
-  document.getElementById('vibes-btn').addEventListener('click', function(e) {
+  document.getElementById('vibes-wrap').addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
     const audio = document.getElementById('vibes-audio');
     vibesOn = !vibesOn;
-    this.textContent = vibesOn ? 'vibes off' : 'vibes on';
+    this.classList.toggle('active', vibesOn);
     if (vibesOn) {
       audio.play().catch(() => {});
     } else {
