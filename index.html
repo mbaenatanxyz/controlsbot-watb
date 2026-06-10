@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controls Bot - Walk the Block</title>
+<style>
+/* ── Cash Sans font ── */
+/* Drop CashSans files in assets/ and uncomment, or replace src with CDN URL */
+@font-face {
+  font-family: 'Cash Sans';
+  src: url('assets/CashSans-Regular.woff2') format('woff2'),
+       url('assets/CashSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cash Sans';
+  src: url('assets/CashSans-Medium.woff2') format('woff2'),
+       url('assets/CashSans-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cash Sans';
+  src: url('assets/CashSans-SemiBold.woff2') format('woff2'),
+       url('assets/CashSans-SemiBold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cash Sans';
+  src: url('assets/CashSans-Bold.woff2') format('woff2'),
+       url('assets/CashSans-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --green: #00d632;
+  --black: #000;
+  --white: #fff;
+  --slides: 15;
+  --font: 'Cash Sans', system-ui, -apple-system, sans-serif;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--black);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Stage ── */
+#scroll-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#stage {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: clip-path;
+  clip-path: inset(0 0 100% 0);
+  overflow: hidden;
+}
+
+.slide:first-child {
+  clip-path: inset(0 0 0% 0);
+}
+
+.slide.dark { background: var(--black); color: var(--white); }
+.slide.green { background: var(--green); color: var(--black); }
+
+/* ── HUD ── */
+#hud {
+  position: fixed;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2.5rem;
+  z-index: 100;
+  pointer-events: none;
+  transition: color 0.3s;
+}
+
+#hud.light { color: var(--black); }
+#hud.dark { color: var(--white); }
+
+#vibes-btn {
+  pointer-events: auto;
+  background: none;
+  border: 1px solid currentColor;
+  color: inherit;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+#vibes-btn:hover { opacity: 0.7; }
+
+#slide-counter {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Typography (Cash Sans specs) ── */
+.headline {
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+}
+
+.subheadline {
+  font-size: clamp(18px, 1.95vw, 28px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+}
+
+.label {
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+
+/* ── Slide layouts ── */
+.slide-inner {
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 3rem;
+  position: relative;
+}
+
+.slide-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100vh;
+  padding: 0 3rem;
+}
+
+/* ── SLIDE 1: Title ── */
+#s1 {
+  flex-direction: column;
+  gap: 0;
+}
+
+#s1::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#s1 .top-bar {
+  position: absolute;
+  top: 2.5rem;
+  left: 2.5rem;
+  right: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+}
+
+#s1 .cash-logo {
+  width: 40px;
+  height: 40px;
+}
+
+#s1 .title-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+#s1 .title-text .headline {
+  font-size: clamp(4rem, 10vw, 9rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.reveal-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.slide.active .reveal-word {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── SLIDE 2: Mission ── */
+#s2 {
+  background: var(--black);
+}
+
+#s2 .flash-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+#s2 .flash-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0;
+  transition: opacity 0.15s linear;
+}
+
+#s2 .flash-bg img.flash-visible {
+  opacity: 1;
+}
+
+#s2 .flash-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+#s2 .mission-text {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  max-width: 800px;
+  text-align: center;
+  padding: 0 3rem;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s2.active .mission-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── SLIDE 3: Phone mockups ── */
+#s3 .phones {
+  display: flex;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  align-items: center;
+  justify-content: center;
+  padding: 0 2rem;
+}
+
+.phone-frame {
+  width: clamp(160px, 18vw, 240px);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.phone-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 1st and 3rd slide in from top, 2nd from bottom */
+.phone-frame:nth-child(1),
+.phone-frame:nth-child(3) {
+  transform: translateY(-80px);
+}
+
+.phone-frame:nth-child(2) {
+  transform: translateY(80px);
+}
+
+.slide.active .phone-frame {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ── SLIDE 4: Scale stats ── */
+#s4 .stats {
+  display: flex;
+  gap: clamp(3rem, 8vw, 8rem);
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.stat {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.slide.active .stat { opacity: 1; transform: translateY(0); }
+
+.stat-icon {
+  width: clamp(60px, 8vw, 100px);
+  height: clamp(60px, 8vw, 100px);
+  margin-bottom: 1rem;
+}
+
+.stat-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide.active .stat-icon img {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.stat:nth-child(1) .stat-icon img { transition-delay: 0.1s; }
+.stat:nth-child(2) .stat-icon img { transition-delay: 0.3s; }
+.stat:nth-child(3) .stat-icon img { transition-delay: 0.5s; }
+
+.stat-number {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+  min-width: 4ch;
+  display: inline-block;
+  text-align: center;
+}
+
+.stat-label {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: #fff;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  max-width: 340px;
+}
+
+/* ── SLIDE 5 & 13: Workflow ── */
+#s5::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#s5 .slide-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  gap: clamp(3rem, 6vw, 8rem);
+}
+
+#s5 .old-computer {
+  position: absolute;
+  bottom: clamp(2rem, 4vw, 4rem);
+  right: clamp(10rem, 20vw, 24rem);
+  width: clamp(100px, 12vw, 180px);
+  height: auto;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#s5.active .old-computer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s5 .slide-title {
+  flex: 0 0 auto;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--white);
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s5.active .slide-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s5 .slide-right {
+  flex: 1;
+}
+
+.workflow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.wf-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wf-row.wf-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.wf-number {
+  flex: 0 0 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
+.wf-connector {
+  width: 1px;
+  height: 20px;
+  background: #333;
+  margin-left: 13px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.wf-connector.wf-visible {
+  opacity: 1;
+}
+
+.wf-step {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 0.65rem 1rem;
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
+  color: #ccc;
+  text-align: left;
+  font-family: system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
+
+.wf-step.bot-step {
+  background: rgba(0, 214, 50, 0.1);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.wf-step.human-step {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #666;
+  color: var(--white);
+}
+
+.wf-arrow {
+  display: none;
+}
+
+/* ── SLIDE 6: Punchline ── */
+#s6 .slide6-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('assets/slide6-bg.png') center/cover no-repeat;
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0;
+  transition: opacity 3s ease;
+}
+
+#s6.active .slide6-bg {
+  opacity: 1;
+}
+
+#s6 .slide6-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1;
+}
+
+#s6 .punchline-wrap {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  gap: clamp(3rem, 6vw, 8rem);
+}
+
+#s6 .punchline-text {
+  flex: 0 0 auto;
+}
+
+#s6 .punchline-text .line1 {
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--white);
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s6 .punchline-text .line2 {
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--green);
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+
+#s6.active .punchline-text .line1,
+#s6.active .punchline-text .line2 {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Repeating pattern grid */
+.pattern-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+}
+
+.pattern-cell {
+  width: clamp(28px, 4vw, 44px);
+  height: clamp(28px, 4vw, 44px);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 214, 50, 0.15);
+  background: rgba(0, 214, 50, 0.03);
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#s6.active .pattern-cell {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.pattern-cell.filled {
+  background: rgba(0, 214, 50, 0.12);
+  border-color: rgba(0, 214, 50, 0.35);
+}
+
+.pattern-cell.bright {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(0, 214, 50, 0.3);
+}
+
+/* Pulse animation on bright cells once revealed */
+#s6.active .pattern-cell.bright {
+  animation: cellPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cellPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(0, 214, 50, 0.3); opacity: 1; }
+  50% { box-shadow: 0 0 24px rgba(0, 214, 50, 0.6); opacity: 0.85; }
+}
+
+/* Shimmer sweep across filled cells */
+#s6.active .pattern-cell.filled {
+  animation: cellShimmer 3s ease-in-out infinite;
+}
+
+@keyframes cellShimmer {
+  0%, 100% { background: rgba(0, 214, 50, 0.12); }
+  50% { background: rgba(0, 214, 50, 0.25); }
+}
+
+/* ── SLIDE 7: GIF phase ── */
+.s7-gif-phase {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  background: var(--black);
+  opacity: 0;
+  transition: opacity 0.8s ease, background 0.8s ease;
+  pointer-events: none;
+}
+
+.s7-gif-phase.visible {
+  opacity: 1;
+}
+
+.s7-gif-phase.shrunk {
+  background: transparent;
+  justify-content: flex-start;
+  padding-left: clamp(2rem, 5vw, 6rem);
+  z-index: 0;
+}
+
+.s7-gif-phase img {
+  max-width: 60%;
+  max-height: 70%;
+  object-fit: contain;
+  transition: max-width 1s cubic-bezier(0.25, 1, 0.5, 1),
+              max-height 1s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.s7-gif-phase.shrunk img {
+  max-width: 25%;
+  max-height: 35%;
+}
+
+/* ── SLIDE 7: Capabilities (circle fan) ── */
+#s7 .card-stack-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding-left: 15%;
+}
+
+.card-stack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.stack-card {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+  padding: 0.8rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 1s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.6s ease;
+}
+
+.stack-card.back {
+  background: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  color: var(--white);
+  width: clamp(100px, 11vw, 140px);
+  height: clamp(100px, 11vw, 140px);
+  font-size: clamp(0.7rem, 1vw, 0.9rem);
+  opacity: 0;
+  transform: translateX(0) scale(0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.stack-card.front {
+  background: var(--green);
+  color: var(--black);
+  font-weight: 700;
+  z-index: 10;
+  width: clamp(180px, 20vw, 260px);
+  height: clamp(180px, 20vw, 260px);
+  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+/* ── SLIDE 8: New workflow ── */
+#s8 .slide-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  gap: clamp(3rem, 6vw, 8rem);
+}
+
+#s8 .slide-title {
+  flex: 0 0 auto;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--white);
+  max-width: 340px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s8.active .slide-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s8 .slide-right {
+  flex: 1;
+}
+
+/* Bracket to show Controls Bot coverage */
+#s8 .workflow {
+  position: relative;
+}
+
+.wf-bracket {
+  width: 3px;
+  background: var(--green);
+  border-radius: 2px;
+  position: absolute;
+  right: -1.5rem;
+  top: 0;
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wf-bracket-label {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  font-weight: 600;
+  color: var(--green);
+  opacity: 0;
+  transition: opacity 0.5s ease 0.6s;
+}
+
+#s8.active .wf-bracket.visible {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+#s8.active .wf-bracket.visible .wf-bracket-label {
+  opacity: 1;
+}
+
+/* Green highlight on steps Controls Bot covers */
+#s8 .wf-step.bot-covered {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(0, 214, 50, 0.08);
+  transition: border-color 0.4s ease, color 0.4s ease, background 0.4s ease;
+}
+
+#s8 .wf-number.bot-covered {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(0, 214, 50, 0.1);
+  transition: border-color 0.4s ease, color 0.4s ease, background 0.4s ease;
+}
+
+/* Collapse: rows shrink and fade */
+#s8 .wf-row,
+#s8 .wf-connector {
+  max-height: 60px;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#s8 .wf-row.collapsing,
+#s8 .wf-connector.collapsing {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+/* ── SLIDE 9: Demo ── */
+#s9 {
+  background: var(--black);
+}
+
+#s9 .slide-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  gap: clamp(3rem, 6vw, 8rem);
+}
+
+#s9 .slide-title {
+  flex: 0 0 auto;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--white);
+  max-width: 340px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s9.active .slide-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s9 .slide-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#s9 .demo-gif {
+  max-width: 100%;
+  max-height: 75vh;
+  border-radius: 12px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+
+#s9.active .demo-gif {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── SLIDE 10: Impact ── */
+#s10 .slide-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  gap: clamp(3rem, 6vw, 8rem);
+}
+
+#s10 .slide-title {
+  flex: 0 0 auto;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--white);
+  max-width: 340px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s10.active .slide-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s10 .slide-title .green {
+  color: var(--green);
+}
+
+#s10 .slide-right {
+  flex: 1;
+}
+
+/* Tracker table */
+.tracker-table {
+  width: 100%;
+  border-collapse: collapse;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+
+#s10.active .tracker-table {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tracker-table th {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  font-weight: 400;
+  color: #fff;
+  text-align: center;
+  padding: 0 0.5rem 0.8rem;
+  border-bottom: 1px solid #333;
+  letter-spacing: -0.005em;
+}
+
+.tracker-table th:first-child {
+  text-align: left;
+  padding-left: 0;
+}
+
+.tracker-table td {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  padding: 0.7rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #fff;
+  letter-spacing: -0.005em;
+}
+
+.tracker-table td:first-child {
+  padding-left: 0;
+  max-width: 220px;
+}
+
+.tracker-table td:not(:first-child) {
+  text-align: center;
+}
+
+.tracker-check {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.tracker-dash {
+  color: #444;
+}
+
+/* Money air - bottom right with twitch */
+#s10 .money-air {
+  position: absolute;
+  bottom: clamp(2rem, 4vw, 4rem);
+  right: clamp(2rem, 4vw, 4rem);
+  width: clamp(80px, 10vw, 140px);
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.3s;
+}
+
+#s10.active .money-air {
+  opacity: 1;
+  animation: moneyTwitch 2s ease-in-out infinite;
+}
+
+@keyframes moneyTwitch {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(4deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-3deg); }
+}
+
+/* Slide 11 accent image */
+#s11 .accent-img {
+  position: absolute;
+  bottom: clamp(2rem, 4vw, 4rem);
+  right: clamp(2rem, 4vw, 4rem);
+  width: clamp(80px, 10vw, 140px);
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.3s;
+}
+
+#s11.active .accent-img {
+  opacity: 1;
+  animation: accentTwitch1 2.5s ease-in-out infinite;
+}
+
+@keyframes accentTwitch1 {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-4deg); }
+}
+
+/* Slide 12 accent image */
+#s12 .accent-img {
+  position: absolute;
+  bottom: clamp(2rem, 4vw, 4rem);
+  right: clamp(2rem, 4vw, 4rem);
+  width: clamp(80px, 10vw, 140px);
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.3s;
+}
+
+#s12.active .accent-img {
+  opacity: 1;
+  animation: accentTwitch2 2.2s ease-in-out infinite;
+}
+
+@keyframes accentTwitch2 {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-3deg); }
+  60% { transform: rotate(4deg); }
+}
+
+/* ── SLIDE 11: Time impact ── */
+#s11 .slide-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  gap: clamp(4rem, 10vw, 12rem);
+}
+
+#s11 .slide-title {
+  flex: 0 0 auto;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--white);
+  max-width: 340px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s11.active .slide-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s11 .slide-right {
+  flex: 1;
+}
+
+.time-impact {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(2rem, 4vw, 4rem);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+
+#s11.active .time-impact {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.time-before, .time-after {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.time-label {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: #fff;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.time-value {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.time-value.green {
+  color: var(--green);
+}
+
+.time-arrow {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: #fff;
+  flex-shrink: 0;
+  padding-bottom: 0.4em;
+}
+
+/* Split-flap animation for time-after value */
+.time-after .time-value {
+  perspective: 400px;
+}
+
+.time-after .time-value .flap-char {
+  display: inline-block;
+  opacity: 0;
+  transform: rotateX(-90deg);
+  transform-origin: center bottom;
+  transition: opacity 0.15s ease, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#s11.active .time-after .time-value .flap-char {
+  opacity: 1;
+  transform: rotateX(0deg);
+}
+
+/* ── SLIDES 12: Split-flap metrics ── */
+.metric-slide {
+  padding: 0 3rem;
+  text-align: left;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.metric-label {
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.metric-compare {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+}
+
+.metric-before, .metric-after {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.metric-year {
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.flap-text {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: #555;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-after .flap-text {
+  color: var(--white);
+}
+
+.flap-char {
+  display: inline-block;
+  opacity: 0;
+  transform: rotateX(-90deg);
+  transition: opacity 0.15s ease, transform 0.3s ease;
+  transform-origin: center bottom;
+}
+
+.slide.active .flap-char {
+  opacity: 1;
+  transform: rotateX(0deg);
+}
+
+.metric-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.slide.active .metric-dot { opacity: 1; }
+
+/* ── SLIDE 14: CTA ── */
+#s12 .slide-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  gap: clamp(4rem, 10vw, 12rem);
+}
+
+#s12 .slide-title {
+  flex: 0 0 auto;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--white);
+  max-width: 340px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s12.active .slide-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s12 .slide-right {
+  flex: 1;
+}
+
+.cta-items {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+
+#s12.active .cta-items {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cta-item {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  flex-wrap: wrap;
+}
+
+.cta-item-label {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: #fff;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+}
+
+.cta-item-value {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: clamp(0.9rem, 1.4vw, 1.2rem);
+  color: var(--black);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.5em 1.2em;
+  border-radius: 100px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  min-height: 2.4em;
+  min-width: 8em;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cta-item-plain {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: #fff;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+}
+
+/* Slide 13 accent image */
+#s13 .accent-img {
+  position: absolute;
+  bottom: clamp(2rem, 4vw, 4rem);
+  right: clamp(2rem, 4vw, 4rem);
+  width: clamp(80px, 10vw, 140px);
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.3s;
+}
+
+#s13.active .accent-img {
+  opacity: 1;
+  animation: accentTwitch3 2.3s ease-in-out infinite;
+}
+
+@keyframes accentTwitch3 {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(5deg); }
+  50% { transform: rotate(0deg); }
+  80% { transform: rotate(-4deg); }
+}
+
+/* ── SLIDE 13: Team ── */
+#s13 .team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0 clamp(2rem, 5vw, 6rem);
+  max-width: 600px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+
+#s13.active .team-list {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.team-line {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: #fff;
+  letter-spacing: -0.005em;
+  line-height: 1.8;
+}
+
+.team-line .team-discipline {
+  color: #666;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  #s3 .phones { gap: 0.8rem; }
+  #s4 .stats { flex-direction: column; align-items: center; gap: 2rem; }
+  .metric-compare { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  #s3 .phones { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<audio id="vibes-audio" loop preload="auto">
+  <!-- Drop your music file in assets/ and update the src -->
+  <source src="assets/music.mp3" type="audio/mpeg">
+</audio>
+
+<div id="hud" class="light">
+  <button id="vibes-btn">vibes on</button>
+  <span id="slide-counter">1 / 15</span>
+</div>
+
+<div id="scroll-container">
+  <div id="stage">
+
+    <!-- SLIDE 1: Title -->
+    <div class="slide green active" id="s1" data-theme="light">
+      <div class="top-bar">
+        <img class="cash-logo" src="assets/cash-logo.svg" alt="Cash App">
+        <span>June 2026</span>
+        <span>Walk the Block</span>
+      </div>
+      <div class="title-text">
+        <div class="headline">
+          <span class="reveal-word" style="transition-delay:0.1s">Controls</span>
+          <span class="reveal-word" style="transition-delay:0.3s">Bot</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Mission -->
+    <div class="slide dark" id="s2" data-theme="dark">
+      <div class="flash-bg">
+        <img src="assets/brand-card.png" alt="">
+        <img src="assets/brand-balcony.jpg" alt="">
+        <img src="assets/brand-barbershop.jpg" alt="">
+        <img src="assets/brand-browsing.jpg" alt="">
+        <img src="assets/brand-street.jpg" alt="">
+        <img src="assets/brand-resort.jpg" alt="">
+        <img src="assets/brand-park.jpg" alt="">
+      </div>
+      <div class="flash-overlay"></div>
+      <div class="mission-text">Our team helps protect every customer</div>
+    </div>
+
+    <!-- SLIDE 3: Phone mockups -->
+    <div class="slide dark" id="s3" data-theme="dark">
+      <div class="phones">
+        <div class="phone-frame" style="transition-delay: 0.1s">
+          <img src="assets/phone-limit.png" alt="$500 remaining of your limit">
+        </div>
+        <div class="phone-frame" style="transition-delay: 0.3s">
+          <img src="assets/phone-deactivated.png" alt="Your account is deactivated">
+        </div>
+        <div class="phone-frame" style="transition-delay: 0.5s">
+          <img src="assets/phone-safety.png" alt="We want to help keep you safe">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Scale stats -->
+    <div class="slide dark" id="s4" data-theme="dark">
+      <div class="stats">
+        <div class="stat" style="transition-delay: 0.1s">
+          <div class="stat-icon"><img src="assets/icon-lock.png" alt=""></div>
+          <div class="stat-number"><span class="count-up" data-target="50">0</span>+</div>
+          <div class="stat-label">account restrictions</div>
+        </div>
+        <div class="stat" style="transition-delay: 0.3s">
+          <div class="stat-icon"><img src="assets/icon-doodad-00954.png" alt=""></div>
+          <div class="stat-number"><span class="count-up" data-target="100">0</span>+</div>
+          <div class="stat-label">limit thresholds</div>
+        </div>
+        <div class="stat" style="transition-delay: 0.5s">
+          <div class="stat-icon"><img src="assets/icon-doodad-01074.png" alt=""></div>
+          <div class="stat-number"><span class="count-up" data-target="200">0</span>+</div>
+          <div class="stat-label">eligibility policies</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Old workflow -->
+    <div class="slide dark" id="s5" data-theme="dark">
+      <div class="slide-layout">
+        <div class="slide-title">Previous process</div>
+        <div class="slide-right">
+          <div class="workflow" id="old-workflow">
+            <div class="wf-row">
+              <div class="wf-number">1</div>
+              <div class="wf-step">Incoming request</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">2</div>
+              <div class="wf-step">Define product requirements</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">3</div>
+              <div class="wf-step">Generate PRD</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">4</div>
+              <div class="wf-step">Run Snowflake queries</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">5</div>
+              <div class="wf-step">Create Figma mocks</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">6</div>
+              <div class="wf-step">Get feedback, iterate</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">7</div>
+              <div class="wf-step">Build &amp; Ship</div>
+            </div>
+          </div>
+        </div>
+        <img class="old-computer" src="assets/old-computer.png" alt="">
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Punchline -->
+    <div class="slide dark" id="s6" data-theme="dark">
+      <div class="slide6-bg"></div>
+      <div class="slide6-overlay"></div>
+      <div class="punchline-wrap">
+        <div class="punchline-text">
+          <div class="line1">Critical work.</div>
+          <div class="line2">Highly repeatable.</div>
+        </div>
+        <div class="pattern-grid" id="pattern-grid"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Capabilities (card stack) -->
+    <div class="slide dark" id="s7" data-theme="dark">
+      <div class="s7-gif-phase" id="s7-gif">
+        <img src="assets/controlsbot.gif" alt="Controls Bot">
+      </div>
+      <div class="card-stack-wrap">
+        <div class="card-stack">
+          <div class="stack-card back" style="transition-delay: 0.15s">Data</div>
+          <div class="stack-card back" style="transition-delay: 0.25s">Product</div>
+          <div class="stack-card back" style="transition-delay: 0.35s">Design</div>
+          <div class="stack-card back" style="transition-delay: 0.45s">Content</div>
+          <div class="stack-card back" style="transition-delay: 0.55s">Compliance</div>
+          <div class="stack-card back" style="transition-delay: 0.65s">Engineering</div>
+          <div class="stack-card front" style="transition-delay: 0.05s">Controls Bot</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: New workflow -->
+    <div class="slide dark" id="s8" data-theme="dark">
+      <div class="slide-layout">
+        <div class="slide-title">Anyone can contribute to the trust space</div>
+        <div class="slide-right">
+          <div class="workflow" id="new-workflow">
+            <div class="wf-row">
+              <div class="wf-number">1</div>
+              <div class="wf-step">Incoming request</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">2</div>
+              <div class="wf-step">Define product requirements</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">3</div>
+              <div class="wf-step">Generate PRD</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">4</div>
+              <div class="wf-step">Run Snowflake queries</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">5</div>
+              <div class="wf-step">Create Figma mocks</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">6</div>
+              <div class="wf-step">Get feedback, iterate</div>
+            </div>
+            <div class="wf-connector"></div>
+            <div class="wf-row">
+              <div class="wf-number">7</div>
+              <div class="wf-step">Build &amp; Ship</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: Demo -->
+    <div class="slide dark" id="s9" data-theme="dark">
+      <div class="slide-layout">
+        <div class="slide-title">What this looks like end to end</div>
+        <div class="slide-right">
+          <img class="demo-gif" src="assets/controlsdemo.gif" alt="Controls Bot demo">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10: Impact -->
+    <div class="slide dark" id="s10" data-theme="dark">
+      <img class="money-air" src="assets/money-air.png" alt="">
+      <div class="slide-layout">
+        <div class="slide-title">Impact so far:<br><span class="green">7 initiatives</span></div>
+        <div class="slide-right">
+          <table class="tracker-table">
+            <thead>
+              <tr>
+                <th>Initiative</th>
+                <th>PRD</th>
+                <th>Design</th>
+                <th>Eng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Scam suspension notifications</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-check">&#10003;</td>
+              </tr>
+              <tr>
+                <td>Elder abuse suspensions</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-check">&#10003;</td>
+              </tr>
+              <tr>
+                <td>ATM withdrawal limits</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-dash">&mdash;</td>
+                <td class="tracker-dash">&mdash;</td>
+              </tr>
+              <tr>
+                <td>Cards aggregated by SSN</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-dash">&mdash;</td>
+                <td class="tracker-dash">&mdash;</td>
+              </tr>
+              <tr>
+                <td>Automating asset denylisting</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-dash">&mdash;</td>
+                <td class="tracker-dash">&mdash;</td>
+              </tr>
+              <tr>
+                <td>Expanding scam suspensions to sponsored accounts</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-dash">&mdash;</td>
+                <td class="tracker-dash">&mdash;</td>
+              </tr>
+              <tr>
+                <td>Sanctions warnings</td>
+                <td class="tracker-dash">&mdash;</td>
+                <td class="tracker-check">&#10003;</td>
+                <td class="tracker-dash">&mdash;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11: Weeks to 2 hrs -->
+    <div class="slide dark" id="s11" data-theme="dark">
+      <img class="accent-img" src="assets/stars.png" alt="">
+      <div class="slide-layout">
+        <div class="slide-title">Defining the experience:</div>
+        <div class="slide-right">
+          <div class="time-impact">
+            <div class="time-before">
+              <div class="time-label">Before</div>
+              <div class="time-value">Weeks</div>
+            </div>
+            <div class="time-arrow">&rarr;</div>
+            <div class="time-after">
+              <div class="time-label">Now</div>
+              <div class="time-value green"><span class="flap-char" style="transition-delay:0.5s">2</span><span class="flap-char" style="transition-delay:0.55s">&nbsp;</span><span class="flap-char" style="transition-delay:0.6s">h</span><span class="flap-char" style="transition-delay:0.65s">o</span><span class="flap-char" style="transition-delay:0.7s">u</span><span class="flap-char" style="transition-delay:0.75s">r</span><span class="flap-char" style="transition-delay:0.8s">s</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12: CTA -->
+    <div class="slide dark" id="s12" data-theme="dark">
+      <img class="accent-img" src="assets/money_flower.png" alt="">
+      <div class="slide-layout">
+        <div class="slide-title">How to use</div>
+        <div class="slide-right">
+          <div class="cta-items">
+            <div class="cta-item">
+              <div class="cta-item-label">to install:</div>
+              <div class="cta-item-value" data-typewriter="/sq agents skills add controls"></div>
+            </div>
+            <div class="cta-item">
+              <div class="cta-item-label">use:</div>
+              <div class="cta-item-value" data-typewriter="/controls"></div>
+            </div>
+            <div class="cta-item">
+              <div class="cta-item-plain">discuss: #controls-bot-discuss</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13: Team -->
+    <div class="slide dark" id="s13" data-theme="dark">
+      <img class="accent-img" src="assets/peace.png" alt="">
+      <div class="slide-center">
+        <div class="team-list">
+          <div class="team-line">Nisha Khalsa <span class="team-discipline">Product</span></div>
+          <div class="team-line">Sam Guthrie <span class="team-discipline">Design</span></div>
+          <div class="team-line">Erin Recachinas <span class="team-discipline">Engineering</span></div>
+          <div class="team-line">Monique Baena-Tan <span class="team-discipline">Design</span></div>
+          <div class="team-line">Soheil Oliaei <span class="team-discipline">Design</span></div>
+          <div class="team-line">Tim Schwuchow <span class="team-discipline">Data Science</span></div>
+          <div class="team-line">Conor Duffy <span class="team-discipline">Legal</span></div>
+          <div class="team-line">Michael Carrah <span class="team-discipline">Legal</span></div>
+          <div class="team-line">Nick Burgess <span class="team-discipline">Compliance</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /stage -->
+</div><!-- /scroll-container -->
+
+<script>
+(function() {
+  const TOTAL = 13;
+  const stage = document.getElementById('stage');
+  const slides = Array.from(stage.querySelectorAll('.slide'));
+  const counter = document.getElementById('slide-counter');
+  const hud = document.getElementById('hud');
+  let currentIndex = 0;
+  let displayIndex = 0;
+  let animId = null;
+  let lastNavTime = 0;           // timestamp of last accepted navigation
+  const NAV_COOLDOWN = 1400;     // ms to ignore ALL input after a nav starts
+
+  function canNavigate() {
+    return Date.now() - lastNavTime > NAV_COOLDOWN;
+  }
+
+  // ── Render ──
+  function render(rawIndex) {
+    slides.forEach((slide, i) => {
+      if (i === 0) {
+        slide.style.clipPath = 'inset(0 0 0% 0)';
+      } else {
+        const p = rawIndex - (i - 1);
+        const clip = Math.max(0, Math.min(1, 1 - p));
+        slide.style.clipPath = `inset(0 0 ${clip * 100}% 0)`;
+      }
+      slide.classList.toggle('active', Math.abs(rawIndex - i) < 0.6);
+    });
+    counter.textContent = `${Math.round(rawIndex) + 1} / ${TOTAL}`;
+  }
+
+  // ── Animate to a slide index ──
+  function goTo(idx) {
+    idx = Math.max(0, Math.min(TOTAL - 1, idx));
+    if (idx === currentIndex) return;
+    if (!canNavigate()) return;
+
+    lastNavTime = Date.now();
+    if (animId) cancelAnimationFrame(animId);
+
+    const from = displayIndex;
+    const to = idx;
+    const duration = 600;
+    let start = null;
+
+    function step(ts) {
+      if (!start) start = ts;
+      const t = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      displayIndex = from + (to - from) * ease;
+      render(displayIndex);
+
+      if (t < 1) {
+        animId = requestAnimationFrame(step);
+      } else {
+        animId = null;
+        displayIndex = to;
+        currentIndex = to;
+        const theme = slides[currentIndex]?.dataset.theme || 'dark';
+        hud.className = theme;
+        onSlideEnter(currentIndex);
+      }
+    }
+
+    animId = requestAnimationFrame(step);
+  }
+
+  // ── Wheel: simple cooldown gate ──
+  // Mac trackpads fire inertia events for ~1-2s after a swipe.
+  // Instead of trying to filter them, we just ignore everything
+  // for NAV_COOLDOWN ms after each accepted navigation.
+  window.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (!canNavigate()) return;
+    // Single event threshold -- no accumulation needed
+    if (Math.abs(e.deltaY) < 4) return;
+    goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
+  }, { passive: false });
+
+  // ── Keyboard ──
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (!canNavigate()) return;
+      goTo(currentIndex + 1);
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (!canNavigate()) return;
+      goTo(currentIndex - 1);
+    }
+  });
+
+  // ── Touch ──
+  let touchStartY = 0;
+  window.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    if (!canNavigate()) return;
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 40) {
+      goTo(currentIndex + (dy > 0 ? 1 : -1));
+    }
+  }, { passive: true });
+
+  // ── Slide 2: Flashing background images ──
+  const flashImages = document.querySelectorAll('#s2 .flash-bg img');
+  let flashInterval = null;
+  let flashIndex = 0;
+
+  // Preload all flash images so first cycle isn't slow
+  flashImages.forEach(img => {
+    const pre = new Image();
+    pre.src = img.src;
+  });
+
+  function startFlash() {
+    if (flashInterval || flashImages.length === 0) return;
+    flashImages[flashIndex].classList.add('flash-visible');
+    flashInterval = setInterval(() => {
+      flashImages.forEach(img => img.classList.remove('flash-visible'));
+      flashIndex = (flashIndex + 1) % flashImages.length;
+      flashImages[flashIndex].classList.add('flash-visible');
+    }, 1200);
+  }
+
+  function stopFlash() {
+    if (flashInterval) {
+      clearInterval(flashInterval);
+      flashInterval = null;
+    }
+    flashImages.forEach(img => img.classList.remove('flash-visible'));
+  }
+
+  // ── Slide-specific animations ──
+  function onSlideEnter(index) {
+    // Flash images for slide 2
+    if (index === 1) startFlash(); else stopFlash();
+    // Count-up for slide 4
+    if (index === 3) runCountUps();
+    // Build workflow for slide 5
+    if (index === 4) buildWorkflow('#old-workflow');
+    // Pattern grid for slide 6
+    if (index === 5) buildPatternGrid();
+    // GIF then circle fan for slide 7
+    if (index === 6) runSlide7();
+    if (index !== 6) resetSlide7();
+    // New workflow for slide 8
+    if (index === 7) runSlide8(); else resetSlide8();
+    // Typewriter for slide 14
+    if (index === 11) runTypewriters();
+  }
+
+  // Slide 7: GIF phase then circle fan
+  let s7Timer = null;
+  function runSlide7() {
+    const gif = document.getElementById('s7-gif');
+    if (!gif) return;
+    // Reset GIF by reloading src
+    const img = gif.querySelector('img');
+    const src = img.src;
+    img.src = '';
+    img.src = src;
+    // Reset states
+    gif.classList.remove('shrunk');
+    gif.classList.add('visible');
+    // After 8s, shrink GIF to left and start circle fan
+    if (s7Timer) clearTimeout(s7Timer);
+    s7Timer = setTimeout(() => {
+      gif.classList.add('shrunk');
+      setTimeout(() => runCircleFan(), 800);
+    }, 8000);
+  }
+
+  function resetSlide7() {
+    const gif = document.getElementById('s7-gif');
+    if (gif) {
+      gif.classList.remove('visible');
+      gif.classList.remove('shrunk');
+    }
+    if (s7Timer) { clearTimeout(s7Timer); s7Timer = null; }
+    // Reset circle fan state
+    fanRunning = false;
+    const front = document.querySelector('#s7 .stack-card.front');
+    const backs = Array.from(document.querySelectorAll('#s7 .stack-card.back'));
+    if (front) { front.style.opacity = '0'; front.style.transform = 'scale(0.5)'; }
+    backs.forEach(c => { c.style.opacity = '0'; c.style.transform = 'translateX(0) scale(0.3)'; });
+  }
+
+  // Original step labels for slide 8
+  const s8OriginalSteps = ['Incoming request', 'Define product requirements', 'Generate PRD', 'Run Snowflake queries', 'Create Figma mocks', 'Get feedback, iterate', 'Build & Ship'];
+
+  function resetSlide8() {
+    const wf = document.querySelector('#new-workflow');
+    if (!wf) return;
+    delete wf.dataset.built;
+    const rows = wf.querySelectorAll('.wf-row');
+    const connectors = wf.querySelectorAll('.wf-connector');
+    const allItems = wf.querySelectorAll('.wf-row, .wf-connector');
+
+    // Remove all animation classes
+    allItems.forEach(item => {
+      item.classList.remove('wf-visible', 'collapsing');
+    });
+
+    // Restore original text and styles
+    rows.forEach((row, i) => {
+      const step = row.querySelector('.wf-step');
+      const num = row.querySelector('.wf-number');
+      if (step) {
+        step.textContent = s8OriginalSteps[i];
+        step.classList.remove('bot-covered');
+      }
+      if (num) {
+        num.textContent = i + 1;
+        num.classList.remove('bot-covered');
+        num.style.background = '';
+        num.style.borderColor = '';
+        num.style.color = '';
+        num.style.fontWeight = '';
+      }
+    });
+  }
+
+  // Slide 8: show all steps, then consolidate 1-5 into Controls Bot
+  function runSlide8() {
+    const wf = document.querySelector('#new-workflow');
+    if (!wf || wf.dataset.built) return;
+    wf.dataset.built = '1';
+    const allItems = wf.querySelectorAll('.wf-row, .wf-connector');
+    const rows = wf.querySelectorAll('.wf-row');
+    const connectors = wf.querySelectorAll('.wf-connector');
+
+    // Show all steps immediately
+    allItems.forEach(item => item.classList.add('wf-visible'));
+
+    // After 2s, highlight steps 1-5 green
+    setTimeout(() => {
+      for (let i = 0; i < 5 && i < rows.length; i++) {
+        const step = rows[i].querySelector('.wf-step');
+        const num = rows[i].querySelector('.wf-number');
+        if (step) step.classList.add('bot-covered');
+        if (num) num.classList.add('bot-covered');
+      }
+
+      // After 2s hold, collapse rows 2-5 into one
+      setTimeout(() => {
+        for (let i = 1; i < 5; i++) {
+          rows[i].classList.add('collapsing');
+        }
+        for (let i = 0; i < 4; i++) {
+          connectors[i].classList.add('collapsing');
+        }
+
+        // Transform row 1 into "Controls Bot"
+        setTimeout(() => {
+          const firstStep = rows[0].querySelector('.wf-step');
+          const firstNum = rows[0].querySelector('.wf-number');
+          if (firstStep) firstStep.textContent = 'Controls Bot';
+          if (firstNum) {
+            firstNum.style.background = 'var(--green)';
+            firstNum.style.borderColor = 'var(--green)';
+            firstNum.style.color = 'var(--black)';
+            firstNum.style.fontWeight = '700';
+            firstNum.textContent = '\u2713';
+          }
+
+          // Renumber remaining steps
+          if (rows[5]) rows[5].querySelector('.wf-number').textContent = '2';
+          if (rows[6]) rows[6].querySelector('.wf-number').textContent = '3';
+        }, 500);
+      }, 2000);
+    }, 2000);
+  }
+
+  // Circle fan animation for slide 7
+  let fanRunning = false;
+  function runCircleFan() {
+    if (fanRunning) return;
+    fanRunning = true;
+    const front = document.querySelector('#s7 .stack-card.front');
+    const backs = Array.from(document.querySelectorAll('#s7 .stack-card.back'));
+    if (!front) return;
+
+    // Use wider gap to prevent overlapping
+    const gap = Math.min(window.innerWidth * 0.13, 160);
+    const extraPad = gap * 0.5;
+
+    function fanOut() {
+      if (!document.querySelector('#s7.active')) { fanRunning = false; return; }
+
+      // Show Controls Bot centered in the right portion
+      front.style.opacity = '1';
+      front.style.transform = 'scale(1)';
+
+      // After a beat, shrink + shift left, fan circles right
+      setTimeout(() => {
+        const totalBack = backs.length;
+        const leftOffset = -(totalBack * gap + extraPad) / 2;
+        front.style.transform = `translateX(${leftOffset}px) scale(0.65)`;
+
+        backs.forEach((card, i) => {
+          setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = `translateX(${leftOffset + extraPad + (i + 1) * gap}px) scale(1)`;
+          }, i * 150);
+        });
+
+        // Hold, then collapse
+        setTimeout(() => {
+          // Reverse: last card collapses first
+          backs.slice().reverse().forEach((card, i) => {
+            setTimeout(() => {
+              card.style.opacity = '0';
+              card.style.transform = `translateX(${leftOffset}px) scale(0.3)`;
+            }, i * 100);
+          });
+
+          // Controls Bot absorbs: grow smoothly back to center
+          const collapseTime = backs.length * 100 + 300;
+          setTimeout(() => {
+            front.style.transform = 'translateX(0) scale(1.12)';
+            setTimeout(() => {
+              front.style.transform = 'translateX(0) scale(1)';
+              // Seamlessly loop -- no opacity reset, just re-trigger fanOut
+              setTimeout(() => {
+                if (document.querySelector('#s7.active')) {
+                  fanOut();
+                } else {
+                  fanRunning = false;
+                }
+              }, 1500);
+            }, 800);
+          }, collapseTime);
+        }, 4000);
+      }, 1000);
+    }
+
+    fanOut();
+  }
+
+  // Pattern grid: repeating pattern populates cell by cell
+  function buildPatternGrid() {
+    const grid = document.getElementById('pattern-grid');
+    if (!grid || grid.dataset.built) return;
+    grid.dataset.built = '1';
+    const cols = 8;
+    const rows = 4;
+    // Repeating pattern per row: bright, filled, empty, filled, bright, empty, filled, empty
+    const rowPattern = ['bright', 'filled', '', 'filled', 'bright', '', 'filled', ''];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'pattern-cell';
+        // Offset pattern each row to show repetition with variation
+        const style = rowPattern[(c + r * 3) % rowPattern.length];
+        if (style) cell.classList.add(style);
+        // Stagger: row by row, left to right
+        const delay = (r * cols + c) * 60 + 600;
+        cell.style.transitionDelay = delay + 'ms';
+        // Offset the looping animations so they ripple across the grid
+        cell.style.animationDelay = ((r * cols + c) * 150) + 'ms';
+        grid.appendChild(cell);
+      }
+    }
+  }
+
+  // Sequentially reveal workflow rows one at a time
+  function buildWorkflow(selector) {
+    const wf = document.querySelector(selector);
+    if (!wf || wf.dataset.built) return;
+    wf.dataset.built = '1';
+    const items = wf.querySelectorAll('.wf-row, .wf-connector');
+    items.forEach((item, i) => {
+      setTimeout(() => {
+        item.classList.add('wf-visible');
+      }, i * 180);
+    });
+  }
+
+  // Count-up animation
+  function runCountUps() {
+    document.querySelectorAll('#s4 .count-up').forEach(el => {
+      const target = parseInt(el.dataset.target);
+      if (el.dataset.done) return;
+      el.dataset.done = '1';
+      let val = 0;
+      const step = Math.ceil(target / 40);
+      const interval = setInterval(() => {
+        val += step;
+        if (val >= target) { val = target; clearInterval(interval); }
+        el.textContent = val;
+      }, 30);
+    });
+  }
+
+  function runImpactCount() {
+    const el = document.querySelector('#s10 .count-target');
+    if (!el || el.dataset.done) return;
+    el.dataset.done = '1';
+    const target = parseInt(el.dataset.target);
+    let val = 0;
+    const interval = setInterval(() => {
+      val++;
+      if (val >= target) { val = target; clearInterval(interval); }
+      el.textContent = val;
+    }, 120);
+  }
+
+  // Typewriter
+  function runTypewriters() {
+    const typeEls = document.querySelectorAll('#s12 [data-typewriter]');
+    let cumDelay = 0;
+    typeEls.forEach((el) => {
+      if (el.dataset.done) return;
+      el.dataset.done = '1';
+      const text = el.dataset.typewriter;
+      el.textContent = '';
+      const myDelay = cumDelay;
+      cumDelay += text.length * 50 + 400;
+      setTimeout(() => {
+        let i = 0;
+        const interval = setInterval(() => {
+          if (i >= text.length) { clearInterval(interval); return; }
+          el.textContent += text[i];
+          i++;
+        }, 50);
+      }, myDelay);
+    });
+  }
+
+  // ── Vibes toggle ──
+  let vibesOn = false;
+  document.getElementById('vibes-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    const audio = document.getElementById('vibes-audio');
+    vibesOn = !vibesOn;
+    this.textContent = vibesOn ? 'vibes off' : 'vibes on';
+    if (vibesOn) {
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+  });
+
+  // ── Init ──
+  renderAt(0);
+  slides[0].classList.add('active');
+})();
+</script>
+</body>
+</html>
