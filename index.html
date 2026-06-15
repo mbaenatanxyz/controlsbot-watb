@@ -324,6 +324,72 @@ body {
   transform: translateY(0);
 }
 
+/* ── SLIDE 7b: Introducing Controls Bot ── */
+#s7b {
+  background: var(--black);
+}
+
+#s7b .intro-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+#s7b .intro-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.7);
+}
+
+#s7b .intro-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+#s7b .intro-text {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  max-width: 800px;
+  text-align: center;
+  padding: 0 3rem;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#s7b.active .intro-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s7b .intro-caret {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  margin-left: 2px;
+  background: var(--green);
+  vertical-align: text-bottom;
+  opacity: 0;
+}
+
+#s7b .intro-caret.blink {
+  animation: introCaretBlink 0.8s steps(1) infinite;
+}
+
+@keyframes introCaretBlink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
 /* Slide 3 accent image */
 #s3 .accent-img {
   position: absolute;
@@ -1104,14 +1170,20 @@ body {
   gap: clamp(3rem, 6vw, 8rem);
 }
 
-#s10 .slide-title {
+#s10 .impact-left {
   flex: 0 0 auto;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 1.6vw, 1.4rem);
+}
+
+#s10 .slide-title {
   font-size: clamp(2.5rem, 5.5vw, 5rem);
   font-weight: 400;
   letter-spacing: -0.03em;
   line-height: 1.14;
   color: var(--white);
-  max-width: 340px;
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.8s ease, transform 0.8s ease;
@@ -1122,7 +1194,23 @@ body {
   transform: translateY(0);
 }
 
-#s10 .slide-title .green {
+#s10 .impact-subtitle {
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--white);
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease 0.15s, transform 0.8s ease 0.15s;
+}
+
+#s10.active .impact-subtitle {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#s10 .impact-subtitle .green {
   color: var(--green);
 }
 
@@ -1231,11 +1319,11 @@ body {
 
 .initiative-item {
   font-family: system-ui, -apple-system, sans-serif;
-  font-size: clamp(13px, 1.1vw, 16px);
+  font-size: clamp(16px, 1.5vw, 21px);
   color: #fff;
   letter-spacing: -0.005em;
   line-height: 1.5;
-  padding: 0.55rem 0;
+  padding: 0.6rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -1636,13 +1724,12 @@ body {
 <body>
 
 <audio id="vibes-audio" loop preload="auto">
-  <!-- Drop your music file in assets/ and update the src -->
-  <source src="assets/music.mp3" type="audio/mpeg">
+  <source src="assets/vibes.m4a" type="audio/mp4">
 </audio>
 
 <div id="hud" class="light">
   <div class="vibes-wrap" id="vibes-wrap"><span class="vibes-label">vibes</span><div class="vibes-toggle"></div></div>
-  <span id="slide-counter">1 / 15</span>
+  <span id="slide-counter">1 / 14</span>
 </div>
 
 <div id="scroll-container">
@@ -1808,11 +1895,27 @@ body {
       </div>
     </div>
 
+    <!-- SLIDE 7b: Introducing Controls Bot -->
+    <div class="slide dark" id="s7b" data-theme="dark">
+      <div class="intro-bg">
+        <img src="assets/brand-freedom.jpg" alt="">
+      </div>
+      <div class="intro-overlay"></div>
+      <div class="intro-text">Introducing <span id="intro-name"></span><span class="intro-caret" id="intro-caret"></span></div>
+    </div>
+
+    <!-- SLIDE 9: Demo -->
+    <div class="slide dark" id="s9" data-theme="dark">
+      <div class="slide-center">
+        <img class="demo-gif" src="assets/controlsdemo.gif" alt="Controls Bot demo">
+      </div>
+    </div>
+
     <!-- SLIDE 8: New workflow -->
     <div class="slide dark" id="s8" data-theme="dark">
       <img class="accent-img" src="assets/mushroom.png" alt="">
       <div class="slide-layout">
-        <div class="slide-title">Anyone can contribute to the trust space</div>
+        <div class="slide-title">Becoming AI with Controls Bot</div>
         <div class="slide-right">
           <div class="workflow" id="new-workflow">
             <div class="wf-row">
@@ -1854,22 +1957,17 @@ body {
       </div>
     </div>
 
-    <!-- SLIDE 9: Demo -->
-    <div class="slide dark" id="s9" data-theme="dark">
-      <div class="slide-center">
-        <img class="demo-gif" src="assets/controlsdemo.gif" alt="Controls Bot demo">
-      </div>
-    </div>
-
     <!-- SLIDE 10: Impact -->
     <div class="slide dark" id="s10" data-theme="dark">
       <canvas class="confetti-canvas" id="confetti-canvas"></canvas>
       <img class="money-air" src="assets/money-air.png" alt="">
       <div class="slide-layout">
-        <div class="slide-title">Impact so far:<br><span class="green"><span id="impact-count">1</span> initiatives shipped</span></div>
+        <div class="impact-left">
+          <div class="slide-title">This is real</div>
+          <div class="impact-subtitle">Impact so far: <span class="green"><span id="impact-count">1</span> initiatives shipped</span></div>
+        </div>
         <div class="slide-right">
           <div class="initiative-list">
-            <div class="initiative-heading">Initiative</div>
             <div class="initiative-item">Scam suspension notifications</div>
             <div class="initiative-item">Elder abuse suspensions</div>
             <div class="initiative-item">ATM withdrawal limits</div>
@@ -1878,7 +1976,7 @@ body {
             <div class="initiative-item">Expanding scam suspensions to sponsored accounts</div>
             <div class="initiative-item">Sanctions warnings</div>
             <div class="initiative-item">Expanding denylist reasons</div>
-            <div class="initiative-item initiative-more" id="more-lined-up" style="color: var(--green); border-bottom: none; font-size: clamp(1rem, 1.4vw, 1.2rem); font-weight: 600;"></div>
+            <div class="initiative-item initiative-more" id="more-lined-up" style="color: var(--green); border-bottom: none; font-size: clamp(16px, 1.5vw, 21px); font-weight: 600;"></div>
           </div>
         </div>
       </div>
@@ -1950,7 +2048,7 @@ body {
 
 <script>
 (function() {
-  const TOTAL = 13;
+  const TOTAL = 14;
   const stage = document.getElementById('stage');
   const slides = Array.from(stage.querySelectorAll('.slide'));
   const counter = document.getElementById('slide-counter');
@@ -2094,12 +2192,14 @@ body {
     if (index === 5) buildWorkflow('#old-workflow'); else resetWorkflow('#old-workflow');
     // Pattern grid for slide 7
     if (index === 6) buildPatternGrid();
-    // New workflow for slide 8
-    if (index === 7) runSlide8(); else resetSlide8();
-    // Confetti for slide 10
-    if (index === 9) { startConfetti(); typeMoreLinedUp(); countUpImpact(); } else { stopConfetti(); resetMoreLinedUp(); resetImpactCount(); }
-    // Typewriter for slide 12
-    if (index === 11) runTypewriters();
+    // Type "Controls Bot" on the intro slide (slide 8)
+    if (index === 7) typeIntroName(); else resetIntroName();
+    // New workflow for slide 10 (demo moved ahead of it)
+    if (index === 9) runSlide8(); else resetSlide8();
+    // Confetti for slide 11
+    if (index === 10) { startConfetti(); typeMoreLinedUp(); countUpImpact(); } else { stopConfetti(); resetMoreLinedUp(); resetImpactCount(); }
+    // Typewriter for slide 13
+    if (index === 12) runTypewriters();
   }
 
   // Slide 7: GIF phase then circle fan
@@ -2487,6 +2587,34 @@ body {
       });
       setTimeout(() => piece.remove(), 900);
     }
+  }
+
+  let introNameTimer = null;
+  function typeIntroName() {
+    const el = document.getElementById('intro-name');
+    const caret = document.getElementById('intro-caret');
+    if (!el || el.dataset.typed) return;
+    el.dataset.typed = '1';
+    const text = 'Controls Bot';
+    let i = 0;
+    el.textContent = '';
+    if (caret) { caret.style.opacity = '1'; caret.classList.remove('blink'); }
+    introNameTimer = setTimeout(function tick() {
+      if (i < text.length) {
+        el.textContent += text[i];
+        i++;
+        introNameTimer = setTimeout(tick, 75);
+      } else if (caret) {
+        caret.classList.add('blink');
+      }
+    }, 500);
+  }
+  function resetIntroName() {
+    if (introNameTimer) { clearTimeout(introNameTimer); introNameTimer = null; }
+    const el = document.getElementById('intro-name');
+    const caret = document.getElementById('intro-caret');
+    if (el) { el.textContent = ''; delete el.dataset.typed; }
+    if (caret) { caret.classList.remove('blink'); caret.style.opacity = '0'; }
   }
 
   let moreLinedUpTimer = null;
