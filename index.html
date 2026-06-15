@@ -155,14 +155,21 @@ body {
 }
 
 .vibes-wrap.active .vibes-toggle {
-  background: var(--green);
+  background: currentColor;
   border-color: currentColor;
   opacity: 1;
 }
 
 .vibes-wrap.active .vibes-toggle::after {
   transform: translateX(12px);
+}
+
+#hud.dark .vibes-wrap.active .vibes-toggle::after {
   background: var(--black);
+}
+
+#hud.light .vibes-wrap.active .vibes-toggle::after {
+  background: var(--white);
 }
 
 .vibes-wrap:hover { opacity: 0.8; }
