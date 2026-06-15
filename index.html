@@ -2716,6 +2716,8 @@ body {
 
   // ── Vibes toggle ──
   let vibesOn = false;
+  let vibesFade = null;
+  const VIBES_MAX = 0.2;
   document.getElementById('vibes-wrap').addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -2723,8 +2725,16 @@ body {
     const audio = document.getElementById('vibes-audio');
     vibesOn = !vibesOn;
     this.classList.toggle('active', vibesOn);
+    if (vibesFade) { clearInterval(vibesFade); vibesFade = null; }
     if (vibesOn) {
+      audio.volume = 0;
       audio.play().catch(() => {});
+      // fade in to VIBES_MAX over ~1.5s
+      vibesFade = setInterval(() => {
+        const next = Math.min(VIBES_MAX, audio.volume + VIBES_MAX / 30);
+        audio.volume = next;
+        if (next >= VIBES_MAX) { clearInterval(vibesFade); vibesFade = null; }
+      }, 50);
     } else {
       audio.pause();
     }
